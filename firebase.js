@@ -36,3 +36,7 @@
   export const onGetPosts = (callback) => onSnapshot(collection(db, "Posts"), callback);
 
   export const deletePost = (id) => deleteDoc(doc(db, "Posts", id));
+
+  export const getPost1 = (id) => getDoc(doc(db, "Posts", id));
+
+  export const updatePost = (id, newFields) => updateDoc(doc(db, "Posts", id), newFields);

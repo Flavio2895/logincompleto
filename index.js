@@ -1,4 +1,4 @@
-import { auth, onGetPosts } from "./firebase.js";
+import { auth, getPost1, onGetPosts, updatePost } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import './registrar.js'
 import './ingresar.js'
@@ -11,7 +11,8 @@ import { savePost, getPost, deletePost } from "./firebase.js";
 
 onAuthStateChanged(auth, async(user)=>{
     const taskForm = document.getElementById("task-form");
-    
+    let editStatus = false;
+    let id = '';
     // Si hay algún listener previo, lo removemos
     if (taskForm.listener) {
         taskForm.removeEventListener("submit", taskForm.listener);
@@ -26,7 +27,15 @@ onAuthStateChanged(auth, async(user)=>{
             e.preventDefault();
             const title = taskForm["task-title"].value;
             const description = taskForm["task-description"].value;
-            savePost(title, description, correo);
+
+            if(!editStatus){
+                savePost(title, description, correo);
+            }else{
+                updatePost(id,{title,description});
+                editStatus = false;
+                document.getElementById('titulo').innerHTML = "Agregar Post"
+            }
+            
             taskForm.reset();
         };
 
@@ -53,10 +62,26 @@ onAuthStateChanged(auth, async(user)=>{
                     }
                 })
                 tasksContainer.innerHTML = html
+
                 const btnsDelete = tasksContainer.querySelectorAll('.btn-delete');
                 btnsDelete.forEach(btn =>{
                     btn.addEventListener('click', (event) =>{
                         deletePost(event.target.dataset.id)
+                    })
+                })
+
+                const btnsEdit = tasksContainer.querySelectorAll('.btn-edit');
+                btnsEdit.forEach(btn =>{
+                    btn.addEventListener('click', async (event) =>{
+                        const doc = await getPost1(event.target.dataset.id);
+                        const post = doc.data();
+                        taskForm['task-title'].value = post.title;
+                        taskForm['task-description'].value = post.description;
+
+                        editStatus = true;
+                        id = event.target.dataset.id;
+                        taskForm['btn-task-form'].innerText = 'Actualizar'
+                        document.getElementById('titulo').innerHTML = "Actualizar Post"
                     })
                 })
             })
